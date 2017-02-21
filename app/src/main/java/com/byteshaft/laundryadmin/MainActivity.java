@@ -15,6 +15,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.byteshaft.laundryadmin.fragments.Approved;
+import com.byteshaft.laundryadmin.fragments.Completed;
+import com.byteshaft.laundryadmin.fragments.Pending;
+import com.byteshaft.laundryadmin.fragments.UnApproved;
+
 public class MainActivity extends AppCompatActivity {
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
@@ -111,24 +116,36 @@ public class MainActivity extends AppCompatActivity {
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            return PlaceholderFragment.newInstance(position + 1);
+            switch (position) {
+                case 0:
+                    return new UnApproved();
+                case 1:
+                    return new Approved();
+                case 2:
+                    return new Pending();
+                case 3:
+                    return new Completed();
+                default: return new UnApproved();
+            }
         }
 
         @Override
         public int getCount() {
             // Show 3 total pages.
-            return 3;
+            return 4;
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return "SECTION 1";
+                    return "UnApproved";
                 case 1:
-                    return "SECTION 2";
+                    return "Approved";
                 case 2:
-                    return "SECTION 3";
+                    return "Pending";
+                case 3:
+                    return "Completed";
             }
             return null;
         }
