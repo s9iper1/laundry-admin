@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public int getCount() {
             // Show 3 total pages.
-            return 4;
+            return 6;
         }
 
         @Override
@@ -106,6 +106,10 @@ public class MainActivity extends AppCompatActivity {
                     return "Pending";
                 case 3:
                     return "Completed";
+                case 4:
+                    return "Normal Request";
+                case 5:
+                    return "Express Request";
             }
             return null;
         }
