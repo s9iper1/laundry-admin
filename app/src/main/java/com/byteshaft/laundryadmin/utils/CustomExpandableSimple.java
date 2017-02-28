@@ -3,7 +3,6 @@ package com.byteshaft.laundryadmin.utils;
 import android.content.Context;
 import android.content.Intent;
 import android.database.DataSetObserver;
-import android.net.Uri;
 import android.text.SpannableString;
 import android.text.style.UnderlineSpan;
 import android.util.Log;
@@ -18,6 +17,7 @@ import android.widget.TextView;
 import com.byteshaft.laundryadmin.AppGlobals;
 import com.byteshaft.laundryadmin.R;
 import com.byteshaft.laundryadmin.WebServiceHelpers;
+import com.byteshaft.laundryadmin.fragments.MapActivity;
 import com.byteshaft.requests.HttpRequest;
 
 import java.net.HttpURLConnection;
@@ -105,8 +105,11 @@ public class CustomExpandableSimple extends BaseExpandableListAdapter {
             @Override
             public void onClick(View view) {
                 String uri = String.format(Locale.ENGLISH, "geo:%f,%f", latitude, longitude);
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-                mContext.startActivity(intent);
+//                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+//                mContext.startActivity(intent);
+                Intent intent = new Intent(mContext, MapActivity.class);
+                intent.putExtra("lat", latitude);
+                intent.putExtra("lng", longitude);
             }
         });
 
@@ -126,8 +129,11 @@ public class CustomExpandableSimple extends BaseExpandableListAdapter {
                 @Override
                 public void onClick(View view) {
                     String uri = String.format(Locale.ENGLISH, "geo:%f,%f", dropLatitude, dropLongitude);
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-                    mContext.startActivity(intent);
+//                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+//                    mContext.startActivity(intent);
+                    Intent intent = new Intent(mContext, MapActivity.class);
+                    intent.putExtra("lat", dropLatitude);
+                    intent.putExtra("lng", dropLongitude);
                 }
             });
         } else {
