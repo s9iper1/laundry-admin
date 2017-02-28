@@ -20,6 +20,10 @@ import com.byteshaft.laundryadmin.WebServiceHelpers;
 import com.byteshaft.laundryadmin.fragments.MapActivity;
 import com.byteshaft.requests.HttpRequest;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -91,60 +95,84 @@ public class CustomExpandableSimple extends BaseExpandableListAdapter {
             holder = (SubItemsViewHolder) convertView.getTag();
         }
         Data data = (Data) getChild(groupPosition, childPosition);
-        holder.pickUpAddress.setText("Pickup Address: \n" + data.getHouseNumber() + " " + data.getPickUpAddress());
-        String loc = data.getLocation();
-        String[] pickDrop = loc.split("\\|");
-        String removeLatLng = pickDrop[0].replaceAll("lat/lng: ", "").replace("(", "").replace(")", "");
-        String[] latLng = removeLatLng.split(",");
-        final double latitude = Double.parseDouble(latLng[0]);
-        final double longitude = Double.parseDouble(latLng[1]);
-        SpannableString pickLocation = new SpannableString(latitude + "," + longitude);
-        pickLocation.setSpan(new UnderlineSpan(), 0, pickLocation.length(), 0);
-        holder.pickupLocation.setText(pickLocation);
-        holder.pickupLocation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String uri = String.format(Locale.ENGLISH, "geo:%f,%f", latitude, longitude);
-//                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-//                mContext.startActivity(intent);
-                Intent intent = new Intent(mContext, MapActivity.class);
-                intent.putExtra("lat", latitude);
-                intent.putExtra("lng", longitude);
-                mContext.startActivity(intent);
+        JSONObject addressJsonObject = data.getAddress();
+        try {
+            holder.pickUpAddress.setText("Pickup Address: \n" + addressJsonObject.getString("pickup_house_number")
+                    + " " + addressJsonObject.getString("pickup_street") + " " +
+                    addressJsonObject.getString("pickup_city") + " " +
+                    addressJsonObject.getString("pickup_zip"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        String loc = null;
+            try {
+                loc = addressJsonObject.getString("location");
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        });
-
-        boolean dropOnPickUpLocation = data.isDropOnPickLocation();
-        if (!dropOnPickUpLocation) {
-            holder.relativeLayout.setVisibility(View.VISIBLE);
-            holder.dropAddress.setText("Drop Address: \n" + data.getDropHouseNumber() + " " +
-                    data.getDropAddress());
-            String replaceLatLng = pickDrop[1].replaceAll("lat/lng: ", "").replace("(", "").replace(")", "");
-            String[] dropLatLng = replaceLatLng.split(",");
-            final double dropLatitude = Double.parseDouble(dropLatLng[0]);
-            final double dropLongitude = Double.parseDouble(dropLatLng[1]);
-            SpannableString content = new SpannableString(dropLatitude + "," + dropLongitude);
-            content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
-            holder.dropLocation.setText(content);
-            holder.dropLocation.setOnClickListener(new View.OnClickListener() {
+            String[] pickDrop = loc.split("\\|");
+            String removeLatLng = pickDrop[0].replaceAll("lat/lng: ", "").replace("(", "").replace(")", "");
+            String[] latLng = removeLatLng.split(",");
+            final double latitude = Double.parseDouble(latLng[0]);
+            final double longitude = Double.parseDouble(latLng[1]);
+            SpannableString pickLocation = new SpannableString(latitude + "," + longitude);
+            pickLocation.setSpan(new UnderlineSpan(), 0, pickLocation.length(), 0);
+            holder.pickupLocation.setText(pickLocation);
+            holder.pickupLocation.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    String uri = String.format(Locale.ENGLISH, "geo:%f,%f", dropLatitude, dropLongitude);
-//                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-//                    mContext.startActivity(intent);
+                    String uri = String.format(Locale.ENGLISH, "geo:%f,%f", latitude, longitude);
+//                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+//                mContext.startActivity(intent);
                     Intent intent = new Intent(mContext, MapActivity.class);
-                    intent.putExtra("lat", dropLatitude);
-                    intent.putExtra("lng", dropLongitude);
+                    intent.putExtra("lat", latitude);
+                    intent.putExtra("lng", longitude);
                     mContext.startActivity(intent);
                 }
             });
-        } else {
-            holder.relativeLayout.setVisibility(View.GONE);
-        }
-        return convertView;
-    }
 
-    @Override
+        boolean dropOnPickUpLocation = false;
+        try {
+            dropOnPickUpLocation = addressJsonObject.getBoolean("drop_on_pickup_location");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+            if (!dropOnPickUpLocation) {
+                holder.relativeLayout.setVisibility(View.VISIBLE);
+                try {
+                    holder.dropAddress.setText("Drop Address: \n" + addressJsonObject.getString("drop_house_number") + " " +
+                            addressJsonObject.getString("drop_street") + " " +
+                            addressJsonObject.getString("drop_city") + " " +
+                            addressJsonObject.getString("drop_zip"));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                String replaceLatLng = pickDrop[1].replaceAll("lat/lng: ", "").replace("(", "").replace(")", "");
+                String[] dropLatLng = replaceLatLng.split(",");
+                final double dropLatitude = Double.parseDouble(dropLatLng[0]);
+                final double dropLongitude = Double.parseDouble(dropLatLng[1]);
+                SpannableString content = new SpannableString(dropLatitude + "," + dropLongitude);
+                content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
+                holder.dropLocation.setText(content);
+                holder.dropLocation.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        String uri = String.format(Locale.ENGLISH, "geo:%f,%f", dropLatitude, dropLongitude);
+//                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+//                    mContext.startActivity(intent);
+                        Intent intent = new Intent(mContext, MapActivity.class);
+                        intent.putExtra("lat", dropLatitude);
+                        intent.putExtra("lng", dropLongitude);
+                        mContext.startActivity(intent);
+                    }
+                });
+            } else {
+                holder.relativeLayout.setVisibility(View.GONE);
+            }
+            return convertView;
+        }
+
+        @Override
     public void registerDataSetObserver(DataSetObserver observer) {
         super.registerDataSetObserver(observer);
         notifyDataSetChanged();
@@ -217,8 +245,23 @@ public class CustomExpandableSimple extends BaseExpandableListAdapter {
             viewHolder = (ViewHolder) convertView.getTag();
         }
         Data data = (Data) getGroup(groupPosition);
+        JSONArray jsonArray = data.getOrderDetail();
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int j = 0; j < jsonArray.length(); j++) {
+            try {
+                JSONObject itemDetails = jsonArray.getJSONObject(j);
+                stringBuilder.append(itemDetails.getString("name"));
+                stringBuilder.append(" (");
+                stringBuilder.append(itemDetails.getString("quantity") + ")");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            if (j + 1 < jsonArray.length()) {
+                stringBuilder.append(" , ");
+            }
+        }
         viewHolder.headerTextView.setAllCaps(true);
-        viewHolder.headerTextView.setText(data.getOrderDetail());
+        viewHolder.headerTextView.setText(stringBuilder.toString());
 
         if (isExpanded) {
             viewHolder.collapseExpandIndicator.setImageResource(R.mipmap.ic_collapse);

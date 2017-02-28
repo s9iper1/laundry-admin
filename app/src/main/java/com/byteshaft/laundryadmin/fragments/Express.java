@@ -67,28 +67,30 @@ public class Express extends Fragment implements HttpRequest.OnReadyStateChangeL
                         data.setCreatedTime(jsonObject.getString("pickup_time"));
                         data.setDropTime(jsonObject.getString("drop_time"));
                         data.setApprovedForProcessing(jsonObject.getBoolean("approved_for_processing"));
-                        data.setPickUpAddress(jsonObjectAddress.getString("pickup_street") + " "+
-                                jsonObjectAddress.getString("pickup_city") +  " "+
-                                jsonObjectAddress.getString("pickup_zip"));
-                        data.setDropAddress(jsonObjectAddress.getString("drop_street") + " "+
-                                jsonObjectAddress.getString("drop_city") + " "+
-                                jsonObjectAddress.getString("drop_zip"));
-                        data.setDropHouseNumber(jsonObjectAddress.getString("drop_house_number"));
-                        data.setHouseNumber(jsonObjectAddress.getString("pickup_house_number"));
-                        data.setDropOnPickLocation(jsonObjectAddress.getBoolean("drop_on_pickup_location"));
-                        Log.i("TAG", "id " + jsonObject.getInt("id")+ " drop on pick" + jsonObjectAddress.getBoolean("drop_on_pickup_location"));
-                        data.setLocation(jsonObjectAddress.getString("location"));
-                        StringBuilder stringBuilder = new StringBuilder();
-                        for (int j = 0; j < serviceItems.length(); j++) {
-                            JSONObject itemDetails = serviceItems.getJSONObject(j);
-                            stringBuilder.append(itemDetails.getString("name"));
-                            stringBuilder.append(" (");
-                            stringBuilder.append(itemDetails.getString("quantity") +")");
-                            if (j+1 < serviceItems.length()) {
-                                stringBuilder.append(" , ");
-                            }
-                        }
-                        data.setOrderDetail(stringBuilder.toString());
+                        data.setAddress(jsonObjectAddress);
+//                                jsonObjectAddress.getString("pickup_street") + " "+
+//                                jsonObjectAddress.getString("pickup_city") +  " "+
+//                                jsonObjectAddress.getString("pickup_zip"));
+//                        data.setDropTime(jsonObject.getString("drop_time"));
+//                        data.setDropAddress(jsonObjectAddress.getString("drop_street") + " "+
+//                                jsonObjectAddress.getString("drop_city") + " "+
+//                                jsonObjectAddress.getString("drop_zip"));
+//                        data.setDropHouseNumber(jsonObjectAddress.getString("drop_house_number"));
+//                        data.setHouseNumber(jsonObjectAddress.getString("pickup_house_number"));
+//                        data.setDropOnPickLocation(jsonObjectAddress.getBoolean("drop_on_pickup_location"));
+//                        Log.i("TAG", "id " + jsonObject.getInt("id")+ " drop on pick" + jsonObjectAddress.getBoolean("drop_on_pickup_location"));
+//                        data.setLocation(jsonObjectAddress.getString("location"));
+//                        StringBuilder stringBuilder = new StringBuilder();
+//                        for (int j = 0; j < serviceItems.length(); j++) {
+//                            JSONObject itemDetails = serviceItems.getJSONObject(j);
+//                            stringBuilder.append(itemDetails.getString("name"));
+//                            stringBuilder.append(" (");
+//                            stringBuilder.append(itemDetails.getString("quantity") +")");
+//                            if (j+1 < serviceItems.length()) {
+//                                stringBuilder.append(" , ");
+//                            }
+//                        }
+                        data.setOrderDetail(serviceItems);
                         arrayList.add(data);
                     }
                     listAdapter = new CustomExpandableSimple(AppGlobals.getContext(),

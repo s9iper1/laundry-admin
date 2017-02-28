@@ -49,6 +49,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private LocationRequest mLocationRequest;
     private GoogleApiClient mGoogleApiClient;
     private int locationCounter = 0;
+    private Double lat;
+    private Double lng;
 
     private static final int MY_PERMISSIONS_REQUEST_LOCATION = 0;
 
@@ -59,9 +61,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         fragmentManager = getSupportFragmentManager();
         SupportMapFragment mapFragment = (SupportMapFragment) fragmentManager.findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        String lat = getIntent().getStringExtra("lat");
-        String lng = getIntent().getStringExtra("lng");
-        addMarker(lat+","+ lng);
+        lat = getIntent().getDoubleExtra("lat", 0);
+        lng = getIntent().getDoubleExtra("lng", 0);
     }
 
     @Override
@@ -129,7 +130,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         mMap.setMyLocationEnabled(true);
                         buildGoogleApiClient();
                         mGoogleApiClient.connect();
-                        }
+                    }
 
                 } else {
                     Toast.makeText(this, "Permission denied!", Toast.LENGTH_SHORT).show();
@@ -150,7 +151,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     MY_PERMISSIONS_REQUEST_LOCATION);
         } else {
-            if (locationEnabled()) {
+            if (!locationEnabled()) {
                 // notify user
                 AlertDialog.Builder dialog = new AlertDialog.Builder(this);
                 dialog.setMessage("Location is not enabled");
@@ -159,7 +160,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     public void onClick(DialogInterface paramDialogInterface, int paramInt) {
                         // TODO Auto-generated method stub
                         Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                        startActivity(myIntent);
+                        startActivityForResult(myIntent, 10);
                         //get gps
                     }
                 });
@@ -176,11 +177,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 mMap.setMyLocationEnabled(true);
                 buildGoogleApiClient();
                 mGoogleApiClient.connect();
+                addMarker(lat + "," + lng);
             }
         }
     }
 
     private void addMarker(String location) {
+        Log.i("TAG", location);
         String[] latLng = location.split(",");
         final double latitude = Double.parseDouble(latLng[0]);
         final double longitude = Double.parseDouble(latLng[1]);
@@ -227,6 +230,29 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient, mLocationRequest, this);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case 10:
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return;
+                }
+                mMap.setMyLocationEnabled(true);
+                buildGoogleApiClient();
+                mGoogleApiClient.connect();
+                addMarker(lat+","+ lng);
+                break;
+        }
     }
 
     @Override

@@ -166,6 +166,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             AppGlobals.saveUserLogin(true);
                             AppGlobals.saveUserActive(true);
                             finish();
+                            startActivity(new Intent(getApplicationContext(), MainActivity.class));
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }

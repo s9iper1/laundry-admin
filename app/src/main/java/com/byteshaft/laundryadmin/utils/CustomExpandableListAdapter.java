@@ -17,18 +17,15 @@ import android.widget.TextView;
 
 import com.byteshaft.laundryadmin.AppGlobals;
 import com.byteshaft.laundryadmin.R;
-import com.byteshaft.laundryadmin.WebServiceHelpers;
 import com.byteshaft.laundryadmin.fragments.MapActivity;
 import com.byteshaft.requests.HttpRequest;
 
-import java.net.HttpURLConnection;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
-import java.util.Locale;
 
-
-/**
- * Created by shahid on 04/01/2017.
- */
 
 public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
 
@@ -95,8 +92,21 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
             holder = (SubItemsViewHolder) convertView.getTag();
         }
         Data data = (Data) getChild(groupPosition, childPosition);
-        holder.pickUpAddress.setText("Pickup Address: \n" + data.getHouseNumber() + " " + data.getPickUpAddress());
-        String loc = data.getLocation();
+        JSONObject addressJsonObject = data.getAddress();
+        try {
+            holder.pickUpAddress.setText("Pickup Address: \n" + addressJsonObject.getString("pickup_house_number")
+                    + " " + addressJsonObject.getString("pickup_street") + " " +
+                    addressJsonObject.getString("pickup_city") + " " +
+                    addressJsonObject.getString("pickup_zip"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        String loc = null;
+        try {
+            loc = addressJsonObject.getString("location");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         String[] pickDrop = loc.split("\\|");
         String removeLatLng = pickDrop[0].replaceAll("lat/lng: ", "").replace("(", "").replace(")", "");
         String[] latLng = removeLatLng.split(",");
@@ -108,9 +118,6 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
         holder.pickupLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String uri = String.format(Locale.ENGLISH, "geo:%f,%f", latitude, longitude);
-//                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-//                mContext.startActivity(intent);
                 Intent intent = new Intent(mContext, MapActivity.class);
                 intent.putExtra("lat", latitude);
                 intent.putExtra("lng", longitude);
@@ -118,11 +125,22 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
             }
         });
 
-        boolean dropOnPickUpLocation = data.isDropOnPickLocation();
+        boolean dropOnPickUpLocation = false;
+        try {
+            dropOnPickUpLocation = addressJsonObject.getBoolean("drop_on_pickup_location");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         if (!dropOnPickUpLocation) {
             holder.relativeLayout.setVisibility(View.VISIBLE);
-            holder.dropAddress.setText("Drop Address: \n" + data.getDropHouseNumber() + " " +
-                    data.getDropAddress());
+            try {
+                holder.dropAddress.setText("Drop Address: \n" + addressJsonObject.getString("drop_house_number") + " " +
+                        addressJsonObject.getString("drop_street") + " " +
+                        addressJsonObject.getString("drop_city") + " " +
+                        addressJsonObject.getString("drop_zip"));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
             String replaceLatLng = pickDrop[1].replaceAll("lat/lng: ", "").replace("(", "").replace(")", "");
             String[] dropLatLng = replaceLatLng.split(",");
             final double dropLatitude = Double.parseDouble(dropLatLng[0]);
@@ -133,9 +151,6 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
             holder.dropLocation.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    String uri = String.format(Locale.ENGLISH, "geo:%f,%f", dropLatitude, dropLongitude);
-//                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-//                    mContext.startActivity(intent);
                     Intent intent = new Intent(mContext, MapActivity.class);
                     intent.putExtra("lat", dropLatitude);
                     intent.putExtra("lng", dropLongitude);
@@ -154,23 +169,14 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
         notifyDataSetChanged();
     }
 
-    private void deleteLocation(int id, final int index) {
+
+    private void update(int requestId, JSONArray itemsQuantity,String pickupTime,
+                              String dropTime, String laundryType, int addressId, String toBeChangedItem) {
         HttpRequest request = new HttpRequest(AppGlobals.getContext());
         request.setOnReadyStateChangeListener(new HttpRequest.OnReadyStateChangeListener() {
             @Override
             public void onReadyStateChange(HttpRequest request, int readyState) {
-                switch (readyState) {
-                    case HttpRequest.STATE_DONE:
-                        WebServiceHelpers.dismissProgressDialog();
-                        Log.i("TAG", "" + request.getStatus());
-                        switch (request.getStatus()) {
-                            case HttpURLConnection.HTTP_NO_CONTENT:
-                                mItems.remove(index);
-                                notifyDataSetChanged();
-                                break;
-
-                        }
-                }
+                Log.i("TAG", " " + request.getResponseText());
             }
         });
         request.setOnErrorListener(new HttpRequest.OnErrorListener() {
@@ -179,10 +185,32 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
 
             }
         });
-        request.open("DELETE", String.format("%suser/addresses/%s", AppGlobals.BASE_URL, id));
+        request.open("PUT", String.format("%slaundry/request/"+requestId, AppGlobals.BASE_URL));
         request.setRequestHeader("Authorization", "Token " +
                 AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_TOKEN));
-        request.send();
+        Log.i("TAG", AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_TOKEN));
+        request.send(orderRequestData(itemsQuantity, pickupTime,  dropTime, laundryType, addressId, toBeChangedItem));
+    }
+
+    private String orderRequestData(JSONArray itemsQuantity,String pickUpTime,  String dropTime,
+                                    String laundryType, int addressId, String changeKey) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("address", addressId);
+            jsonObject.put("pickup_time", pickUpTime);
+            jsonObject.put("drop_time", dropTime);
+            jsonObject.put("laundry_type", laundryType);
+            jsonObject.put("service_items", itemsQuantity);
+            if (changeKey.equals("Accept")) {
+                jsonObject.put("approved_for_processing", "True");
+            } else {
+                jsonObject.put("service_done", "True");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Log.i("TAG", "DATA "+ jsonObject.toString());
+        return jsonObject.toString();
     }
 
     @Override
@@ -208,7 +236,7 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
     @Override
     public View getGroupView(int groupPosition, boolean isExpanded,
                              View convertView, ViewGroup parent) {
-        ViewHolder viewHolder;
+        final ViewHolder viewHolder;
         if (convertView == null) {
             LayoutInflater infalInflater = (LayoutInflater) this.mContext
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -221,14 +249,36 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
-        Data data = (Data) getGroup(groupPosition);
+        final Data data = (Data) getGroup(groupPosition);
         viewHolder.headerTextView.setAllCaps(true);
-        viewHolder.headerTextView.setText(data.getOrderDetail());
+        JSONArray jsonArray = data.getOrderDetail();
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int j = 0; j < jsonArray.length(); j++) {
+            try {
+                JSONObject itemDetails = jsonArray.getJSONObject(j);
+                stringBuilder.append(itemDetails.getString("name"));
+                stringBuilder.append(" (");
+                stringBuilder.append(itemDetails.getString("quantity") + ")");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            if (j + 1 < jsonArray.length()) {
+                stringBuilder.append(" , ");
+            }
+        }
+        viewHolder.headerTextView.setText(stringBuilder.toString());
         viewHolder.approve.setText(buttonTitle);
         viewHolder.approve.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.i("TAG", "click");
+                try {
+                    update(data.getId(), data.getOrderDetail(), data.getCreatedTime(), data.getDropTime(),
+                            data.getLaundryType(), data.getAddress().getInt("id"),
+                            viewHolder.approve.getText().toString().trim());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
 
             }
         });
