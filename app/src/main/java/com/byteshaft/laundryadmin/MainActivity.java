@@ -8,11 +8,13 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.byteshaft.laundryadmin.fragments.Approved;
 import com.byteshaft.laundryadmin.fragments.Completed;
+import com.byteshaft.laundryadmin.fragments.Express;
+import com.byteshaft.laundryadmin.fragments.Normal;
 import com.byteshaft.laundryadmin.fragments.Pending;
 import com.byteshaft.laundryadmin.fragments.UnApproved;
 
@@ -35,9 +37,11 @@ public class MainActivity extends AppCompatActivity {
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.setOffscreenPageLimit(6);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
+        Log.i("TAG", "token " + AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_TOKEN));
     }
 
 
@@ -80,19 +84,20 @@ public class MainActivity extends AppCompatActivity {
                 case 0:
                     return new UnApproved();
                 case 1:
-                    return new Approved();
-                case 2:
                     return new Pending();
-                case 3:
+                case 2:
                     return new Completed();
+                case 3:
+                    return new Normal();
+                case 4:
+                    return new Express();
                 default: return new UnApproved();
             }
         }
 
         @Override
         public int getCount() {
-            // Show 3 total pages.
-            return 6;
+            return 5;
         }
 
         @Override
@@ -101,14 +106,12 @@ public class MainActivity extends AppCompatActivity {
                 case 0:
                     return "UnApproved";
                 case 1:
-                    return "Approved";
-                case 2:
                     return "Pending";
-                case 3:
+                case 2:
                     return "Completed";
-                case 4:
+                case 3:
                     return "Normal Request";
-                case 5:
+                case 4:
                     return "Express Request";
             }
             return null;

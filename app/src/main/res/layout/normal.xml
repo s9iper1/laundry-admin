@@ -3,4 +3,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <ExpandableListView
+        android:id="@+id/un_approved_list"
+        android:scrollbars="none"
+        android:groupIndicator="@null"
+        android:layout_margin="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="8dp">
+
+    </ExpandableListView>
+
 </LinearLayout>
