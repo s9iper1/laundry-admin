@@ -24,6 +24,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 
 
@@ -171,7 +172,8 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
 
 
     private void update(int requestId, JSONArray itemsQuantity,String pickupTime,
-                              String dropTime, String laundryType, int addressId, String toBeChangedItem) {
+                              String dropTime, String laundryType, int addressId,
+                        String toBeChangedItem, int userId) {
         HttpRequest request = new HttpRequest(AppGlobals.getContext());
         request.setOnReadyStateChangeListener(new HttpRequest.OnReadyStateChangeListener() {
             @Override
@@ -189,11 +191,11 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
         request.setRequestHeader("Authorization", "Token " +
                 AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_TOKEN));
         Log.i("TAG", AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_TOKEN));
-        request.send(orderRequestData(itemsQuantity, pickupTime,  dropTime, laundryType, addressId, toBeChangedItem));
+        request.send(orderRequestData(itemsQuantity, pickupTime,  dropTime, laundryType, addressId, toBeChangedItem, userId));
     }
 
     private String orderRequestData(JSONArray itemsQuantity,String pickUpTime,  String dropTime,
-                                    String laundryType, int addressId, String changeKey) {
+                                    String laundryType, int addressId, String changeKey, int userId) {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("address", addressId);
@@ -201,9 +203,12 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
             jsonObject.put("drop_time", dropTime);
             jsonObject.put("laundry_type", laundryType);
             jsonObject.put("service_items", itemsQuantity);
+            jsonObject.put("user", userId);
             if (changeKey.equals("Accept")) {
                 jsonObject.put("approved_for_processing", "True");
+                jsonObject.put("service_done", "False");
             } else {
+                jsonObject.put("approved_for_processing", "True");
                 jsonObject.put("service_done", "True");
             }
         } catch (JSONException e) {
@@ -234,7 +239,7 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
     }
 
     @Override
-    public View getGroupView(int groupPosition, boolean isExpanded,
+    public View getGroupView(final int groupPosition, boolean isExpanded,
                              View convertView, ViewGroup parent) {
         final ViewHolder viewHolder;
         if (convertView == null) {
@@ -271,15 +276,32 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
         viewHolder.approve.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.i("TAG", "click");
-                try {
-                    update(data.getId(), data.getOrderDetail(), data.getCreatedTime(), data.getDropTime(),
-                            data.getLaundryType(), data.getAddress().getInt("id"),
-                            viewHolder.approve.getText().toString().trim());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                Log.i("TAG", viewHolder.approve.getText().toString());
+                JSONObject jsonObject = new JSONObject();
+                if (viewHolder.approve.getText().toString().trim().equals("Accept")) {
+                    try {
+                        jsonObject.put("approved_for_processing", "True");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
 
+                } else {
+                    try {
+                        jsonObject.put("service_done", "True");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                Log.i("TAG", jsonObject.toString());
+                patch(data.getId(), jsonObject, groupPosition);
+
+//                try {
+//                    update(data.getId(), data.getOrderDetail(), data.getCreatedTime(), data.getDropTime(),
+//                            data.getLaundryType(), data.getAddress().getInt("id"),
+//                            viewHolder.approve.getText().toString().trim(), data.getUserId());
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
             }
         });
 
@@ -289,6 +311,36 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
             viewHolder.collapseExpandIndicator.setImageResource(R.mipmap.ic_expand);
         }
         return convertView;
+    }
+
+    private void patch(int id, JSONObject jsonObject, final int position) {
+        HttpRequest request = new HttpRequest(AppGlobals.getContext());
+        request.setOnReadyStateChangeListener(new HttpRequest.OnReadyStateChangeListener() {
+            @Override
+            public void onReadyStateChange(HttpRequest request, int readyState) {
+                switch (readyState) {
+                    case HttpRequest.STATE_DONE:
+                        Log.i("TAG", "" + request.getResponseText());
+                        switch (request.getStatus()) {
+                            case HttpURLConnection.HTTP_OK:
+                                mItems.remove(position);
+                                notifyDataSetChanged();
+                                break;
+                        }
+                }
+            }
+        });
+        request.setOnErrorListener(new HttpRequest.OnErrorListener() {
+            @Override
+            public void onError(HttpRequest request, int readyState, short error, Exception exception) {
+
+            }
+        });
+        request.open("PATCH", String.format("%slaundry/request/%s", AppGlobals.BASE_URL, id));
+        request.setRequestHeader("X-HTTP-Method-Override", "PATCH");
+        request.setRequestHeader("Authorization", "Token " +
+                AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_TOKEN));
+        request.send(jsonObject.toString());
     }
 
     @Override

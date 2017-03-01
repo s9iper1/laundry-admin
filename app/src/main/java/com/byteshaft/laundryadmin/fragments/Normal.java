@@ -66,6 +66,8 @@ public class Normal extends Fragment implements HttpRequest.OnReadyStateChangeLi
                         JSONArray serviceItems = jsonObject.getJSONArray("service_items");
                         data.setCreatedTime(jsonObject.getString("pickup_time"));
                         data.setDropTime(jsonObject.getString("drop_time"));
+                        data.setUserId(jsonObject.getInt("user"));
+                        data.setLaundryType(jsonObject.getString("laundry_type"));
                         data.setApprovedForProcessing(jsonObject.getBoolean("approved_for_processing"));
                         data.setAddress(jsonObjectAddress);
 //                                jsonObjectAddress.getString("pickup_street") + " "+

@@ -12,6 +12,17 @@ public class Data {
     private JSONObject address;
     private int id;
     private JSONArray orderDetail;
+    private int userId;
+    private String laundryType;
+    private String dropTime;
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
 
     public String getLaundryType() {
         return laundryType;
@@ -21,7 +32,6 @@ public class Data {
         this.laundryType = laundryType;
     }
 
-    private String laundryType;
 
     public String getDropTime() {
         return dropTime;
@@ -31,7 +41,6 @@ public class Data {
         this.dropTime = dropTime;
     }
 
-    private String dropTime;
 
     public String getCreatedTime() {
         return createdTime;

@@ -75,6 +75,8 @@ public class UnApproved extends Fragment implements HttpRequest.OnReadyStateChan
                         data.setDropTime(jsonObject.getString("drop_time"));
                         data.setApprovedForProcessing(jsonObject.getBoolean("approved_for_processing"));
                         data.setAddress(jsonObjectAddress);
+                        data.setUserId(jsonObject.getInt("user"));
+                        data.setLaundryType(jsonObject.getString("laundry_type"));
 //                                jsonObjectAddress.getString("pickup_street") + " "+
 //                                jsonObjectAddress.getString("pickup_city") +  " "+
 //                                jsonObjectAddress.getString("pickup_zip"));
