@@ -5,23 +5,46 @@
     android:minHeight="50dp"
     android:padding="10dp">
 
-    <TextView
-        android:id="@+id/text_view_location_header"
+    <LinearLayout
+        android:id="@+id/main_layout"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_centerVertical="true"
-        android:text="default text"
-        android:textColor="#FFFFFF"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:layout_height="wrap_content"
+        android:weightSum="4">
 
-    <ImageView
-        android:id="@+id/image_view_location_expand_collapse"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"
-        android:adjustViewBounds="true"
-        android:background="@mipmap/ic_expand" />
+        <TextView
+            android:id="@+id/text_view_location_header"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:text="default text"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_weight="4"/>
+
+        <ImageView
+            android:layout_weight="1"
+            android:id="@+id/image_view_location_expand_collapse"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:adjustViewBounds="true"
+            android:background="@mipmap/ic_expand" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/time_layout"
+        android:layout_below="@+id/main_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/pick_up"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/drop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 
 </RelativeLayout>

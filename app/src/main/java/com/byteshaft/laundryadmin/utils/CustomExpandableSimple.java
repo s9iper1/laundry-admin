@@ -46,6 +46,8 @@ public class CustomExpandableSimple extends BaseExpandableListAdapter {
     static class ViewHolder {
         TextView headerTextView;
         ImageView collapseExpandIndicator;
+        TextView pickUp;
+        TextView drop;
     }
 
     static class SubItemsViewHolder {
@@ -239,6 +241,8 @@ public class CustomExpandableSimple extends BaseExpandableListAdapter {
             convertView = infalInflater.inflate(R.layout.list_header_delegate_simple, null);
             viewHolder = new ViewHolder();
             viewHolder.headerTextView = (TextView) convertView.findViewById(R.id.text_view_location_header);
+            viewHolder.pickUp = (TextView) convertView.findViewById(R.id.pick_up);
+            viewHolder.drop = (TextView) convertView.findViewById(R.id.drop);
             viewHolder.collapseExpandIndicator = (ImageView) convertView.findViewById(R.id.image_view_location_expand_collapse);
             convertView.setTag(viewHolder);
         } else {
@@ -246,6 +250,8 @@ public class CustomExpandableSimple extends BaseExpandableListAdapter {
         }
         Data data = (Data) getGroup(groupPosition);
         JSONArray jsonArray = data.getOrderDetail();
+        viewHolder.pickUp.setText("PickUp: "+data.getCreatedTime());
+        viewHolder.drop.setText(" Delivery: "+data.getDropTime());
         StringBuilder stringBuilder = new StringBuilder();
         for (int j = 0; j < jsonArray.length(); j++) {
             try {

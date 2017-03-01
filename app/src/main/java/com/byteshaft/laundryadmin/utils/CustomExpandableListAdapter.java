@@ -45,6 +45,8 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
         TextView headerTextView;
         ImageView collapseExpandIndicator;
         Button approve;
+        TextView pickUp;
+        TextView drop;
     }
 
     static class SubItemsViewHolder {
@@ -171,54 +173,6 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
         notifyDataSetChanged();
     }
 
-
-    private void update(int requestId, JSONArray itemsQuantity,String pickupTime,
-                              String dropTime, String laundryType, int addressId,
-                        String toBeChangedItem, int userId) {
-        HttpRequest request = new HttpRequest(AppGlobals.getContext());
-        request.setOnReadyStateChangeListener(new HttpRequest.OnReadyStateChangeListener() {
-            @Override
-            public void onReadyStateChange(HttpRequest request, int readyState) {
-                Log.i("TAG", " " + request.getResponseText());
-            }
-        });
-        request.setOnErrorListener(new HttpRequest.OnErrorListener() {
-            @Override
-            public void onError(HttpRequest request, int readyState, short error, Exception exception) {
-
-            }
-        });
-        request.open("PUT", String.format("%slaundry/request/"+requestId, AppGlobals.BASE_URL));
-        request.setRequestHeader("Authorization", "Token " +
-                AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_TOKEN));
-        Log.i("TAG", AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_TOKEN));
-        request.send(orderRequestData(itemsQuantity, pickupTime,  dropTime, laundryType, addressId, toBeChangedItem, userId));
-    }
-
-    private String orderRequestData(JSONArray itemsQuantity,String pickUpTime,  String dropTime,
-                                    String laundryType, int addressId, String changeKey, int userId) {
-        JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("address", addressId);
-            jsonObject.put("pickup_time", pickUpTime);
-            jsonObject.put("drop_time", dropTime);
-            jsonObject.put("laundry_type", laundryType);
-            jsonObject.put("service_items", itemsQuantity);
-            jsonObject.put("user", userId);
-            if (changeKey.equals("Accept")) {
-                jsonObject.put("approved_for_processing", "True");
-                jsonObject.put("service_done", "False");
-            } else {
-                jsonObject.put("approved_for_processing", "True");
-                jsonObject.put("service_done", "True");
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        Log.i("TAG", "DATA "+ jsonObject.toString());
-        return jsonObject.toString();
-    }
-
     @Override
     public int getChildrenCount(int groupPosition) {
         return 1;
@@ -250,6 +204,8 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
             viewHolder = new ViewHolder();
             viewHolder.headerTextView = (TextView) convertView.findViewById(R.id.text_view_location_header);
             viewHolder.approve = (Button) convertView.findViewById(R.id.approve);
+            viewHolder.pickUp = (TextView) convertView.findViewById(R.id.pick_up);
+            viewHolder.drop = (TextView) convertView.findViewById(R.id.drop);
             viewHolder.collapseExpandIndicator = (ImageView) convertView.findViewById(R.id.image_view_location_expand_collapse);
             convertView.setTag(viewHolder);
         } else {
@@ -258,6 +214,8 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
         final Data data = (Data) getGroup(groupPosition);
         viewHolder.headerTextView.setAllCaps(true);
         JSONArray jsonArray = data.getOrderDetail();
+        viewHolder.pickUp.setText("Pickup: "+data.getCreatedTime());
+        viewHolder.drop.setText(" Delivery: "+data.getDropTime());
         StringBuilder stringBuilder = new StringBuilder();
         for (int j = 0; j < jsonArray.length(); j++) {
             try {
