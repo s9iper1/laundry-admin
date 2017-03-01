@@ -295,14 +295,6 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
                 }
                 Log.i("TAG", jsonObject.toString());
                 patch(data.getId(), jsonObject, groupPosition);
-
-//                try {
-//                    update(data.getId(), data.getOrderDetail(), data.getCreatedTime(), data.getDropTime(),
-//                            data.getLaundryType(), data.getAddress().getInt("id"),
-//                            viewHolder.approve.getText().toString().trim(), data.getUserId());
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
             }
         });
 
