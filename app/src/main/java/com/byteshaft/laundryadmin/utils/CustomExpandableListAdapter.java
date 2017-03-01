@@ -51,7 +51,6 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
 
     static class SubItemsViewHolder {
         TextView pickUpAddress;
-
         TextView pickupLocation;
 
         // drop textViews
