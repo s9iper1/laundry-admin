@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import com.byteshaft.laundryadmin.AppGlobals;
 import com.byteshaft.laundryadmin.R;
+import com.byteshaft.laundryadmin.fragments.Completed;
 import com.byteshaft.laundryadmin.fragments.MapActivity;
 import com.byteshaft.requests.HttpRequest;
 
@@ -313,7 +314,7 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
         return convertView;
     }
 
-    private void patch(int id, JSONObject jsonObject, final int position) {
+    private void patch(int id, final JSONObject jsonObject, final int position) {
         HttpRequest request = new HttpRequest(AppGlobals.getContext());
         request.setOnReadyStateChangeListener(new HttpRequest.OnReadyStateChangeListener() {
             @Override
@@ -325,6 +326,14 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
                             case HttpURLConnection.HTTP_OK:
                                 mItems.remove(position);
                                 notifyDataSetChanged();
+                                if (jsonObject.has("service_done")) {
+                                    try {
+                                        JSONObject object = new JSONObject(request.getResponseText());
+                                        Completed.getInstance().processJsonObject(object);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
                                 break;
                         }
                 }

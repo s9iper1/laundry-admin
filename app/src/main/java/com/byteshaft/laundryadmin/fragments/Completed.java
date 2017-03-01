@@ -30,10 +30,16 @@ public class Completed extends Fragment implements HttpRequest.OnReadyStateChang
     public ArrayList<Data> arrayList;
     public CustomExpandableSimple listAdapter;
     public ExpandableListView expListView;
+    public static Completed sInstance;
+
+    public static Completed getInstance() {
+        return sInstance;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mBaseView = inflater.inflate(R.layout.completed, container, false);
+        sInstance = this;
         expListView = (ExpandableListView) mBaseView.findViewById(R.id.un_approved_list);
         getUnApproved();
         return mBaseView;
@@ -56,52 +62,35 @@ public class Completed extends Fragment implements HttpRequest.OnReadyStateChang
                 try {
                     JSONArray jsonArray = new JSONArray(request.getResponseText());
                     arrayList = new ArrayList<>();
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        JSONObject jsonObject = jsonArray.getJSONObject(i);
-                        Log.i("TAG", "added " + jsonObject);
-                        Data data = new Data();
-                        data.setId(jsonObject.getInt("id"));
-                        data.setServiceDone(jsonObject.getBoolean("service_done"));
-                        JSONObject jsonObjectAddress = jsonObject.getJSONObject("address");
-                        JSONArray serviceItems = jsonObject.getJSONArray("service_items");
-                        data.setCreatedTime(jsonObject.getString("pickup_time"));
-                        data.setDropTime(jsonObject.getString("drop_time"));
-                        data.setUserId(jsonObject.getInt("user"));
-                        data.setLaundryType(jsonObject.getString("laundry_type"));
-                        data.setApprovedForProcessing(jsonObject.getBoolean("approved_for_processing"));
-                        data.setAddress(jsonObjectAddress);
-//                                jsonObjectAddress.getString("pickup_street") + " "+
-//                                jsonObjectAddress.getString("pickup_city") +  " "+
-//                                jsonObjectAddress.getString("pickup_zip"));
-//                        data.setDropTime(jsonObject.getString("drop_time"));
-//                        data.setDropAddress(jsonObjectAddress.getString("drop_street") + " "+
-//                                jsonObjectAddress.getString("drop_city") + " "+
-//                                jsonObjectAddress.getString("drop_zip"));
-//                        data.setDropHouseNumber(jsonObjectAddress.getString("drop_house_number"));
-//                        data.setHouseNumber(jsonObjectAddress.getString("pickup_house_number"));
-//                        data.setDropOnPickLocation(jsonObjectAddress.getBoolean("drop_on_pickup_location"));
-//                        Log.i("TAG", "id " + jsonObject.getInt("id")+ " drop on pick" + jsonObjectAddress.getBoolean("drop_on_pickup_location"));
-//                        data.setLocation(jsonObjectAddress.getString("location"));
-//                        StringBuilder stringBuilder = new StringBuilder();
-//                        for (int j = 0; j < serviceItems.length(); j++) {
-//                            JSONObject itemDetails = serviceItems.getJSONObject(j);
-//                            stringBuilder.append(itemDetails.getString("name"));
-//                            stringBuilder.append(" (");
-//                            stringBuilder.append(itemDetails.getString("quantity") +")");
-//                            if (j+1 < serviceItems.length()) {
-//                                stringBuilder.append(" , ");
-//                            }
-//                        }
-                        data.setOrderDetail(serviceItems);
-                        arrayList.add(data);
-                    }
                     listAdapter = new CustomExpandableSimple(AppGlobals.getContext(),
                             arrayList);
                     listAdapter.notifyDataSetChanged();
                     expListView.setAdapter(listAdapter);
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                        processJsonObject(jsonObject);
+                    }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
         }
+    }
+
+    public void processJsonObject(JSONObject jsonObject) throws JSONException {
+        Log.i("TAG", "added " + jsonObject);
+        Data data = new Data();
+        data.setId(jsonObject.getInt("id"));
+        data.setServiceDone(jsonObject.getBoolean("service_done"));
+        JSONObject jsonObjectAddress = jsonObject.getJSONObject("address");
+        JSONArray serviceItems = jsonObject.getJSONArray("service_items");
+        data.setCreatedTime(jsonObject.getString("pickup_time"));
+        data.setDropTime(jsonObject.getString("drop_time"));
+        data.setUserId(jsonObject.getInt("user"));
+        data.setLaundryType(jsonObject.getString("laundry_type"));
+        data.setApprovedForProcessing(jsonObject.getBoolean("approved_for_processing"));
+        data.setAddress(jsonObjectAddress);
+        data.setOrderDetail(serviceItems);
+        arrayList.add(data);
+        listAdapter.notifyDataSetChanged();
     }
 }

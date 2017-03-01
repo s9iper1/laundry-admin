@@ -280,7 +280,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mMap.animateCamera(CameraUpdateFactory
                 .newCameraPosition(cameraPosition));
         locationCounter++;
-        if (locationCounter > 2) {
+        if (locationCounter > 1) {
             stopLocationService();
             myLat = location.getLatitude();
             myLng = location.getLongitude();
