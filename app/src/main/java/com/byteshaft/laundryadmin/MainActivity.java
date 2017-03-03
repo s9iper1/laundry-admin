@@ -1,17 +1,21 @@
 package com.byteshaft.laundryadmin;
 
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.byteshaft.laundryadmin.account.LoginActivity;
 import com.byteshaft.laundryadmin.fragments.Completed;
 import com.byteshaft.laundryadmin.fragments.Express;
 import com.byteshaft.laundryadmin.fragments.Normal;
@@ -41,7 +45,9 @@ public class MainActivity extends AppCompatActivity {
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
-        Log.i("TAG", "token " + AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_TOKEN));
+        if (AppGlobals.isUserActive() && AppGlobals.isUserLoggedIn()) {
+            setTitle(AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_FULL_NAME));
+        }
     }
 
 
@@ -60,7 +66,29 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_logout) {
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+            alertDialogBuilder.setTitle("Confirmation");
+            alertDialogBuilder.setMessage("Do you really want to logout?").setCancelable(false).setPositiveButton("Ok",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            SharedPreferences sharedpreferences = AppGlobals.getPreferenceManager();
+                            SharedPreferences.Editor editor = sharedpreferences.edit();
+                            editor.clear();
+                            editor.commit();
+                            AppGlobals.logout = true;
+                            finish();
+                            startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+                        }
+                    });
+            alertDialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.dismiss();
+                }
+            });
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
             return true;
         }
 

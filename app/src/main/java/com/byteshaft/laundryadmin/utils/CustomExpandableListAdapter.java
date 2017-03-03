@@ -124,6 +124,7 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
                 Intent intent = new Intent(mContext, MapActivity.class);
                 intent.putExtra("lat", latitude);
                 intent.putExtra("lng", longitude);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 mContext.startActivity(intent);
             }
         });
@@ -157,6 +158,7 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
                     Intent intent = new Intent(mContext, MapActivity.class);
                     intent.putExtra("lat", dropLatitude);
                     intent.putExtra("lng", dropLongitude);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     mContext.startActivity(intent);
                 }
             });

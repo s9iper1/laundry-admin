@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:weightSum="4">
 
     <ExpandableListView
         android:id="@+id/un_approved_list"
         android:scrollbars="none"
+        android:layout_weight="3.5"
         android:groupIndicator="@null"
-        android:layout_margin="5dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="8dp">
+        android:layout_height="0dp"
+        android:layout_gravity="left|top"
+        android:headerDividersEnabled="true"
+        android:footerDividersEnabled="true">
 
     </ExpandableListView>
 

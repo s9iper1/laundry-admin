@@ -51,6 +51,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private int locationCounter = 0;
     private Double lat;
     private Double lng;
+    SupportMapFragment mapFragment;
 
     private static final int MY_PERMISSIONS_REQUEST_LOCATION = 0;
 
@@ -59,7 +60,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_fragment);
         fragmentManager = getSupportFragmentManager();
-        SupportMapFragment mapFragment = (SupportMapFragment) fragmentManager.findFragmentById(R.id.map);
+        mapFragment = (SupportMapFragment) fragmentManager.findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         lat = getIntent().getDoubleExtra("lat", 0);
         lng = getIntent().getDoubleExtra("lng", 0);
@@ -237,7 +238,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case 10:
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this,
+                        Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     // TODO: Consider calling
                     //    ActivityCompat#requestPermissions
                     // here to request the missing permissions, and then overriding
@@ -247,10 +250,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     // for ActivityCompat#requestPermissions for more details.
                     return;
                 }
-                mMap.setMyLocationEnabled(true);
-                buildGoogleApiClient();
-                mGoogleApiClient.connect();
-                addMarker(lat+","+ lng);
+                mapFragment.getMapAsync(this);
                 break;
         }
     }
@@ -276,7 +276,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public void onLocationChanged(Location location) {
         Log.i(getClass().getName(), "Location changed ");
         CameraPosition cameraPosition = new CameraPosition.Builder()
-                .target(new LatLng(location.getLatitude(), location.getLongitude())).zoom(10).build();
+                .target(new LatLng(location.getLatitude(), location.getLongitude())).zoom(6).build();
         mMap.animateCamera(CameraUpdateFactory
                 .newCameraPosition(cameraPosition));
         locationCounter++;

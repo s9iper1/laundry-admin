@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.support.v7.app.AlertDialog;
 
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 /**
  * Created by s9iper1 on 2/21/17.
@@ -33,11 +34,11 @@ public class AppGlobals extends Application {
     public static boolean dialogCancel = false;
     public static final String LAUNDRY_REQUEST_URL = "http://178.62.87.25/api/laundry/request";
 
-
     @Override
     public void onCreate() {
         super.onCreate();
         FirebaseApp.initializeApp(getApplicationContext());
+        FirebaseMessaging.getInstance().subscribeToTopic("admin");
         sContext = getApplicationContext();
     }
 
